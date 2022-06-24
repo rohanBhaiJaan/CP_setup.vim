@@ -31,7 +31,7 @@ endfunction
 function! setup#CompileAndRun()
     let l:cmd = ""
     if s:cpExt == "cpp"
-        let l:cmd = 'g++ '.s:cpFilePath.' -o ~/.compiled/'. s:cpFileHeadName .' 2> ~/.compiled/output.in && ~/.compiled/'. s:cpFileHeadName .'<~/.compiled/input.in>~/.compiled/output.in'
+        let l:cmd = 'clang++ '.s:cpFilePath.' -o ~/.compiled/'. s:cpFileHeadName .' 2> ~/.compiled/output.in && ~/.compiled/'. s:cpFileHeadName .'<~/.compiled/input.in>~/.compiled/output.in'
     elseif s:cpExt == "c"
         let l:cmd = 'clang '.s:cpFilePath.' -o ~/.compiled/'. s:cpFileHeadName .' 2> ~/.compiled/output.in && ~/.compiled/'. s:cpFileHeadName .'<~/.compiled/input.in>~/.compiled/output.in'
     endif
