@@ -1,7 +1,10 @@
 if exists("g:CP_setup")
     finish
 endif
+
 let g:CP_setup = 1
+
+set autoread
 
 if ! exists("g:setup_change_to_current_file")
     let g:setup_change_to_current_file = 0

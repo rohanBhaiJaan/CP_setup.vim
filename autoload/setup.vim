@@ -21,6 +21,7 @@ endfunction
 function! setup#RunCode()
     let l:cmd = '~/.compiled/'. s:cpFileHeadName .'<~/.compiled/input.in> ~/.compiled/output.in'
     call system(l:cmd)
+    checktime
     if !has('nvim')
         let notificationWinId = popup_notification("program terminated", #{time: 1000, highlight: "WarningMsg", pos: "center"})
     else
@@ -36,6 +37,7 @@ function! setup#CompileAndRun()
         let l:cmd = 'clang '.s:cpFilePath.' -o ~/.compiled/'. s:cpFileHeadName .' 2> ~/.compiled/output.in && ~/.compiled/'. s:cpFileHeadName .'<~/.compiled/input.in>~/.compiled/output.in'
     endif
     call system(l:cmd)
+    checktime
     if !has('nvim')
         let notificationWinId = popup_notification("compiled", #{time: 1000, highlight: "WarningMsg", pos: "center"})
     else
