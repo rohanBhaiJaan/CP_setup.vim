@@ -1,16 +1,42 @@
 let s:cpExt = expand("%:e")
-
 let s:cpFileHeadName = expand('%:t:r')
 let s:cpFilePath = expand('%:p')
+
+function! s:notify(str) abort
+    if !has('nvim')
+        call popup_notification(a:str, #{time: 1000, highlight: "WarningMsg", pos: "center"})
+    else
+        echo a:str
+    endif
+endfunction
+
+function! s:executeSetup(compile) abort
+    let l:cmd = '~/.compiled/'. s:cpFileHeadName .'<~/.compiled/input.in>~/.compiled/output.in'
+    if a:compile == 1
+        if s:cpExt == "cpp"
+            let l:cmd = 'clang++ '.s:cpFilePath.' -o ~/.compiled/'. s:cpFileHeadName .' 2> ~/.compiled/output.in && ' . l:cmd
+        elseif s:cpExt == "c"
+            let l:cmd = 'clang '.s:cpFilePath.' -o ~/.compiled/'. s:cpFileHeadName .' 2> ~/.compiled/output.in && ' . l:cmd
+        endif
+    endif
+    call system(l:cmd)
+    checktime
+endfunction
 
 function! s:closeSplitSetupForCP()
     bdelete ~/.compiled/input.in
     bdelete ~/.compiled/output.in
 endfunction
 
+function! s:createSplit()
+    silent keepalt vs ~/.compiled/input.in | setlocal filetype=cp_setup
+    vertical resize 24 
+    silent keepalt split ~/.compiled/output.in | setlocal filetype=cp_setup
+endfunction
+
 function! setup#SplitSetupForCPP()
     if(winnr('$') <= 2)
-        execute 'silent keepalt vs ~/.compiled/input.in | vertical resize 24 | silent keepalt split ~/.compiled/output.in'
+        call s:createSplit()
     elseif(bufexists(s:cpFilePath) && (bufnr('~/.compiled/input.in') > 0 || bufnr('~/.compiled/output.in') > 0))
         call s:closeSplitSetupForCP()
     else
@@ -18,33 +44,20 @@ function! setup#SplitSetupForCPP()
     endif
 endfunction
 
-function! setup#RunCode()
-    let l:cmd = '~/.compiled/'. s:cpFileHeadName .'<~/.compiled/input.in> ~/.compiled/output.in'
-    call system(l:cmd)
-    checktime
-    if !has('nvim')
-        let notificationWinId = popup_notification("program terminated", #{time: 1000, highlight: "WarningMsg", pos: "center"})
-    else
-        echo "program terminated "
-    endif
+function! setup#RunCode() abort
+    call s:executeSetup(0)
+    call s:notify("program terminated")
 endfunction
 
-function! setup#CompileAndRun()
-    let l:cmd = ""
-    if s:cpExt == "cpp"
-        let l:cmd = 'clang++ '.s:cpFilePath.' -o ~/.compiled/'. s:cpFileHeadName .' 2> ~/.compiled/output.in && ~/.compiled/'. s:cpFileHeadName .'<~/.compiled/input.in>~/.compiled/output.in'
-    elseif s:cpExt == "c"
-        let l:cmd = 'clang '.s:cpFilePath.' -o ~/.compiled/'. s:cpFileHeadName .' 2> ~/.compiled/output.in && ~/.compiled/'. s:cpFileHeadName .'<~/.compiled/input.in>~/.compiled/output.in'
-    endif
-    call system(l:cmd)
-    checktime
-    if !has('nvim')
-        let notificationWinId = popup_notification("compiled", #{time: 1000, highlight: "WarningMsg", pos: "center"})
-    else
-        echo "compiled and run completed"
-    endif
+function! setup#CompileAndRun() abort
+    call s:executeSetup(1)
+    call s:notify("compiled and run completed")
 endfunction
 
 function! setup#swapCompileAndRunFile()
-    let s:cpFilePath = expand('%:p') | let s:cpExt = expand('%:e') | let s:cpFileHeadName = expand("%:t:r")
+    if g:setup_change_to_current_file == 1
+        let s:cpFilePath = expand('%:p')
+        let s:cpExt = expand('%:e')
+        let s:cpFileHeadName = expand("%:t:r")
+    endif
 endfunction
